@@ -74,4 +74,20 @@ Below are a couple of screenshots included with this repository. If you want to 
   </div>
 </div>
 
+<div style="display:flex;flex-direction:column;gap:24px;align-items:center;margin-top:32px">
+  <div style="text-align:center;max-width:920px;width:100%">
+    <strong>Login</strong>
+    <div style="margin-top:8px">
+      <img src="./phts-readme/Login.png" alt="Login" style="max-width:720px;width:200%;object-fit:cover;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.08);" />
+    </div>
+  </div>
+
+  <div style="text-align:center;max-width:920px;width:100%">
+    <strong>Register</strong>
+    <div style="margin-top:8px">
+      <img src="./phts-readme/Register.png" alt="Register" style="max-width:720px;width:200%;object-fit:cover;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.08);" />
+    </div>
+  </div>
+</div>
+
 
