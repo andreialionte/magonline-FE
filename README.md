@@ -2,6 +2,8 @@
 
 - **Purpose**: React + TypeScript frontend for the MagOnline sample store. Connects to a Spring Boot backend (JWT auth) to list, view, create, edit, and delete products.
 
+This repository contains only the backend. The frontend is a separate project: https://github.com/andreialionte/magonline-BE
+
 **Prerequisites**:
 - **Node.js**: v16+ recommended.
 - **Package manager**: `pnpm` recommended (project includes `pnpm-lock.yaml`), or `npm` as fallback.
