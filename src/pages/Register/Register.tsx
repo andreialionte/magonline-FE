@@ -24,7 +24,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
+  
   const navigate = useNavigate()
 
   const validatePassword = (password: string) => {
@@ -77,11 +77,7 @@ export default function Register() {
       return
     }
 
-    if (!acceptTerms) {
-      setError('Please accept the Terms and Conditions')
-      setLoading(false)
-      return
-    }
+    
 
     try {
       const payload = {
@@ -167,10 +163,7 @@ export default function Register() {
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (<p className="mt-2 text-xs text-red-600">Passwords do not match</p>)}
             </div>
 
-            <div className="flex items-start">
-              <input id="terms" type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} className="h-4 w-4 mt-1 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-700">I agree to the <a href="#" className="text-indigo-600 hover:text-indigo-500 font-medium">Terms and Conditions</a> and <a href="#" className="text-indigo-600 hover:text-indigo-500 font-medium">Privacy Policy</a></label>
-            </div>
+            
 
             <div>
               <button type="submit" disabled={loading} className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">{loading ? (<span className="flex items-center justify-center gap-2"><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>Creating Account...</span>) : ('Create Account')}</button>

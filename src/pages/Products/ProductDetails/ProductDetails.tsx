@@ -21,7 +21,7 @@ export default function ProductDetails() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const data = await ky.get(`http://localhost:5000/api/products/getproduct/${id}`).json<Product>();
+        const data = await ky.get(`http://localhost:5000/api/products/getproduct?id=${id}`).json<Product>();
         setProduct(data);
       } catch (err) {
         setError('Failed to load product details');
@@ -70,7 +70,7 @@ export default function ProductDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
       <div className="max-w-4xl mx-auto">
-        {/* Back button */}
+        
         <button
           onClick={() => (window.location.href = '/products')}
           className="mb-6 flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition"
@@ -80,7 +80,7 @@ export default function ProductDetails() {
         </button>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
+          
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
               <Package className="w-8 h-8 text-indigo-600" />
@@ -89,9 +89,9 @@ export default function ProductDetails() {
             <p className="text-gray-600 mt-2">View complete product information</p>
           </div>
 
-          {/* Product Info */}
+          
           <div className="space-y-6">
-            {/* Product Name */}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
               <div className="relative">
@@ -104,7 +104,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Description */}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <div className="relative">
@@ -117,7 +117,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Price & Quantity */}
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
@@ -144,7 +144,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Category & Subcategory */}
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
@@ -161,7 +161,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Seller Name */}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Seller Name</label>
               <div className="relative">
@@ -174,7 +174,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Actions */}
+            
             <div className="flex gap-4 pt-4">
               <button
                 onClick={() => (window.location.href = '/products')}

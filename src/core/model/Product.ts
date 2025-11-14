@@ -6,4 +6,6 @@ export default interface Product {
     price: number;
     quantity: number;
     sellerName?: string;
+    description?: string;
+    sellerId?: string;
   }

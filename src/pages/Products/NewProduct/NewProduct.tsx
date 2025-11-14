@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Package, DollarSign, Hash, Tag, User, FileText, AlertCircle, ArrowLeft } from 'lucide-react';
 import ky from 'ky';
@@ -7,7 +7,7 @@ import type Product from '../../../core/model/Product';
 interface FormState {
   name: string;
   description: string;
-  price: string; // keep as string because inputs are text/number inputs
+  price: string;
   quantity: string;
   category: string;
   subcategory: string;
@@ -28,6 +28,24 @@ export default function NewProduct() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(user);
+      setFormData(prev => ({
+        ...prev,
+        sellerName: `${parsedUser.firstName} ${parsedUser.lastName}`
+      }));
+    } catch (_) {
+      window.location.href = '/login';
+    }
+  }, []);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -41,7 +59,6 @@ export default function NewProduct() {
     setError('');
     setLoading(true);
 
-    // Validations
     if (!formData.name || !formData.description || !formData.price || !formData.quantity || 
         !formData.category || !formData.subcategory || !formData.sellerName) {
       setError('Please fill in all fields');
@@ -62,7 +79,13 @@ export default function NewProduct() {
     }
 
     try {
-      // Create product DTO (backend will usually generate `id`)
+      const user = localStorage.getItem('user');
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      const parsedUser = JSON.parse(user);
+
       const productDto: Omit<Product, 'id'> = {
         name: formData.name,
         subcategory: formData.subcategory || undefined,
@@ -70,6 +93,7 @@ export default function NewProduct() {
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity, 10),
         sellerName: formData.sellerName || undefined,
+        sellerId: parsedUser.id,
         description: formData.description
       } as Omit<Product, 'id'>;
 
@@ -79,7 +103,6 @@ export default function NewProduct() {
 
       setSuccess(true);
       
-      // Redirect după 2 secunde
       setTimeout(() => {
         window.location.href = '/products';
       }, 2000);
@@ -277,7 +300,8 @@ export default function NewProduct() {
                   type="text"
                   value={formData.sellerName}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  readOnly
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none"
                   placeholder="Your name or company"
                 />
               </div>

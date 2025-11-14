@@ -31,6 +31,16 @@ export default function EditProduct() {
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<boolean>(false);
+  const [isOwner, setIsOwner] = useState<boolean>(false);
+
+  const currentUser = (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u) : null;
+    } catch (_) {
+      return null;
+    }
+  })();
 
   useEffect(() => {
     if (!id) {
@@ -39,20 +49,32 @@ export default function EditProduct() {
       return;
     }
 
+    if (!currentUser) {
+      window.location.href = '/login';
+      return;
+    }
+
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const product = await ky.get(`http://localhost:5000/api/products/getproduct/${id}`).json<Product>();
-        // Prefill form (convert numbers to strings)
+        const product = await ky.get(`http://localhost:5000/api/products/getproduct?id=${id}`).json<Product>();
         setFormData({
           name: product.name || '',
-          description: (product as any).description || '',
+          description: product.description || '',
           price: String(product.price ?? ''),
           quantity: String(product.quantity ?? ''),
           category: product.category || '',
           subcategory: product.subcategory || '',
           sellerName: product.sellerName || ''
         });
+        
+        const fullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+        const owner = (product.sellerId && currentUser && product.sellerId === currentUser.id) || product.sellerName === fullName || product.sellerName === currentUser.email;
+        console.debug('edit ownership', { productSellerId: product.sellerId, currentUserId: currentUser.id, productSellerName: product.sellerName, fullName, currentUserEmail: currentUser.email, owner });
+        setIsOwner(Boolean(owner));
+        if (!owner) {
+          setError('You are not authorized to edit this product');
+        }
       } catch (err) {
         setError('Failed to load product');
         console.error(err);
@@ -74,7 +96,7 @@ export default function EditProduct() {
     setError('');
     setSaving(true);
 
-    // Basic validations (same as NewProduct)
+    
     if (!formData.name || !formData.description || !formData.price || !formData.quantity ||
         !formData.category || !formData.subcategory || !formData.sellerName) {
       setError('Please fill in all fields');
@@ -95,17 +117,30 @@ export default function EditProduct() {
     }
 
     try {
-      const productDto: Omit<Product, 'id'> = {
+      if (!currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!isOwner) {
+        setError('You are not authorized to update this product');
+        setSaving(false);
+        return;
+      }
+
+      const productDto: Product = {
+        id: id as string,
         name: formData.name,
         subcategory: formData.subcategory || undefined,
         category: formData.category || undefined,
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity, 10),
-        sellerName: formData.sellerName || undefined
-      } as Omit<Product, 'id'>;
+        sellerName: formData.sellerName || undefined,
+        description: formData.description,
+        sellerId: currentUser.id
+      };
 
-      // Send update request (assumes API endpoint accepts PUT at this path)
-      await ky.put(`http://localhost:5000/api/products/updateproduct/${id}`, { json: productDto }).json();
+      await ky.put('http://localhost:5000/api/products/updateproduct', { json: productDto }).json();
 
       setSuccess(true);
       setTimeout(() => (window.location.href = '/products'), 2000);
@@ -139,6 +174,23 @@ export default function EditProduct() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Updated!</h2>
           <p className="text-gray-600 mb-4">Redirecting to products page...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && !isOwner) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-pink-100 px-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Not Authorized</h2>
+          <p className="text-gray-600">You are not allowed to edit this product.</p>
+          <div className="mt-4 flex justify-center">
+            <button onClick={() => (window.location.href = '/products')} className="px-6 py-2 bg-indigo-600 text-white rounded-lg">Back to Products</button>
+          </div>
         </div>
       </div>
     );

@@ -37,11 +37,9 @@ export default function Login() {
         json: formData
       }).json<{ token: string; user: any }>();
 
-      // store token and user
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      // navigate to products
       navigate('/products');
     } catch (err: any) {
       console.error(err);
@@ -55,7 +53,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
+          
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
               <Lock className="w-8 h-8 text-indigo-600" />
@@ -64,7 +62,7 @@ export default function Login() {
             <p className="text-gray-600 mt-2">Sign in to your account</p>
           </div>
 
-          {/* Error message */}
+          
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -72,9 +70,9 @@ export default function Login() {
             </div>
           )}
 
-          {/* Form */}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email field */}
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email
@@ -126,20 +124,9 @@ export default function Login() {
               </div>
             </div>
 
-            {/* <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">Remember me</span>
-              </label>
-              <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot password?
-              </a>
-            </div> */}
+            
 
-            {/* Submit button */}
+            
             <div>
               <button
                 type="submit"

@@ -1,21 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Package, DollarSign, Edit, Trash2, Eye, Plus } from 'lucide-react';
+import { Search, Filter, Package, DollarSign, Edit, Trash2, Eye, Plus, LogIn, UserPlus } from 'lucide-react';
 import ky from 'ky';
 import type Product from '../../../core/model/Product';
 
 export default function AllProducts() {
+  const currentUser = (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u) : null;
+    } catch (_) {
+      return null;
+    }
+  })();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  
-  // Filter states
+
   const [nameFilter, setNameFilter] = useState<string>('');
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
 
-  // Fetch products
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -23,7 +29,6 @@ export default function AllProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      // Înlocuiește cu URL-ul tău real
       const data = await ky.get('http://localhost:5000/api/products/getproducts').json<Product[]>();
       setProducts(data || []);
       setFilteredProducts(data || []);
@@ -35,18 +40,15 @@ export default function AllProducts() {
     }
   };
 
-  // Apply filters
   useEffect(() => {
     let filtered = products;
 
-    // Filter by name
     if (nameFilter) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(nameFilter.toLowerCase())
       );
     }
 
-    // Filter by price range
     if (minPrice) {
       filtered = filtered.filter(product => product.price >= parseFloat(minPrice));
     }
@@ -58,13 +60,33 @@ export default function AllProducts() {
   }, [nameFilter, minPrice, maxPrice, products]);
 
   const handleDelete = async (id: string) => {
+    const user = currentUser;
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+
+    const prod = products.find(p => p.id === id);
+    if (!prod) {
+      alert('Product not found');
+      return;
+    }
+
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const isOwner = (prod.sellerId && prod.sellerId === user.id) || prod.sellerName === fullName || prod.sellerName === user.email;
+    console.debug('delete check', { prodSellerId: prod.sellerId, userId: user.id, prodSellerName: prod.sellerName, fullName, userEmail: user.email, isOwner });
+    if (!isOwner) {
+      alert('You are not authorized to delete this product');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
       await ky.delete(`http://localhost:5000/api/products/deleteProduct`, {
         json: id
       });
-      fetchProducts(); // Refresh list
+      fetchProducts();
     } catch (err) {
       alert('Failed to delete product');
       console.error(err);
@@ -80,7 +102,6 @@ export default function AllProducts() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -92,17 +113,59 @@ export default function AllProducts() {
                 <p className="text-gray-600">Manage your product inventory</p>
               </div>
             </div>
-            <button
-              onClick={() => window.location.href = '/new-product'}
-              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <Plus className="w-5 h-5" />
-              Add Product
-            </button>
+            <div className="flex items-center gap-4">
+              {currentUser ? (
+                <>
+                  <div className="flex items-center gap-3 pr-2">
+                    <div className="text-sm text-gray-700">{`Hi, ${currentUser.firstName || currentUser.email}`}</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('user');
+                      window.location.href = '/';
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => window.location.href = '/login'}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/register'}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Register
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    window.location.href = '/login';
+                  } else {
+                    window.location.href = '/new-product';
+                  }
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <Plus className="w-5 h-5" />
+                Add Product
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Filters */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-5 h-5 text-indigo-600" />
@@ -110,7 +173,6 @@ export default function AllProducts() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Name filter */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name
@@ -127,7 +189,6 @@ export default function AllProducts() {
               </div>
             </div>
 
-            {/* Min price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Min Price
@@ -144,7 +205,6 @@ export default function AllProducts() {
               </div>
             </div>
 
-            {/* Max price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Max Price
@@ -162,7 +222,6 @@ export default function AllProducts() {
             </div>
           </div>
 
-          {/* Clear filters button */}
           {(nameFilter || minPrice || maxPrice) && (
             <button
               onClick={clearFilters}
@@ -173,14 +232,12 @@ export default function AllProducts() {
           )}
         </div>
 
-        {/* Error message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
-        {/* Products Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20">
@@ -260,20 +317,24 @@ export default function AllProducts() {
                           >
                             <Eye className="w-5 h-5" />
                           </button>
-                          <button
-                            onClick={() => window.location.href = `/edit-product/${product.id}`}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
-                            title="Edit product"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                            title="Delete product"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
+                          {currentUser && ((product.sellerId && currentUser.id === product.sellerId) || product.sellerName === `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || product.sellerName === currentUser.email) && (
+                            <>
+                              <button
+                                onClick={() => window.location.href = `/edit-product/${product.id}`}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
+                                title="Edit product"
+                              >
+                                <Edit className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                title="Delete product"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -284,7 +345,6 @@ export default function AllProducts() {
           )}
         </div>
 
-        {/* Results count */}
         {!loading && filteredProducts.length > 0 && (
           <div className="mt-4 text-center text-sm text-gray-600">
             Showing {filteredProducts.length} of {products.length} products
