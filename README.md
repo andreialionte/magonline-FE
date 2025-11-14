@@ -16,9 +16,7 @@ This repository contains only the backend. The frontend is a separate project: h
 - Preview production build: `pnpm preview` (or `npm run preview`).
 
 **Configuration**
-- API base and endpoint paths live in `src/utils/api.config.ts`.
-  - Default: `BASE_URL = "http://localhost:5000/api/"`.
-  - If your backend runs on another host/port, update that file.
+- API base URL used by the frontend is `http://localhost:5000/api/` by default. If your backend runs on another host/port, update the API base URL in your local environment or in the frontend code where API requests are made.
 
 **Auth flow (frontend expectations)**
 - Login response expected: `{ token, user }` where `user` contains `id`, `firstName`, `lastName`, `email`.
@@ -38,14 +36,14 @@ This repository contains only the backend. The frontend is a separate project: h
   - Enforces server-side authorization on update/delete endpoints (client-side checks are not sufficient for security).
 - Ensure CORS is configured on the backend to allow the frontend origin during development.
 
-**Troubleshooting**
-- 404 when opening product details: verify the frontend is calling `getproduct?id={id}` and that the backend is running and reachable at the `BASE_URL` in `src/utils/api.config.ts`.
+- **Troubleshooting**
+- 404 when opening product details: verify the frontend is calling `getproduct?id={id}` and that the backend is running and reachable at the configured API base URL (default `http://localhost:5000`).
 - Ownership/authorization errors: confirm backend returns `sellerId` and that `localStorage.user.id` matches backend user ids.
 - If login doesn't persist: check browser storage and ensure backend login returns `user` and `token` as described.
 
-**Key files**
-- `src/utils/api.config.ts` — API base and endpoints
+- **Key files**
 - `src/core/model/Product.ts` — Product TypeScript interface
+- (API base URL is used directly in several request calls; update these strings if you change backend host/port)
 - `src/pages/Products/AllProducts/AllProducts.tsx` — list, add, edit, delete UI
 - `src/pages/Products/ProductDetails/ProductDetails.tsx` — product detail view
 - `src/pages/Products/NewProduct/NewProduct.tsx` — create product page
